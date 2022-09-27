@@ -90,7 +90,7 @@ static void ConvertImage(GifFile *gif, SavedImage *image, char *imageConv, int m
 	GifColorType color;
 	int x, y, x2, y2, i, j, trns;
 	int palConv[256];
-	int palIndex, px1, px2;
+	int palIndex, px1, px2, w, h;
 
 	if (gif && gif->fp && image && imageConv && mode > 0) {
 		memset(palConv, -1, 256 * sizeof(int));
@@ -109,7 +109,8 @@ static void ConvertImage(GifFile *gif, SavedImage *image, char *imageConv, int m
 						}
 					}
 				}
-				if (!trns) {
+				if (!trns && (x + image->ImageDesc.Left) < CANVAS_WIDTH &&
+				    (y + image->ImageDesc.Top) < CANVAS_HEIGHT) {
 					canvasImage[x + image->ImageDesc.Left + ((y + image->ImageDesc.Top) * CANVAS_WIDTH)] = image->RasterBits[i];
 				}
 			}
