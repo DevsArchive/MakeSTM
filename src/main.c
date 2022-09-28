@@ -5,27 +5,26 @@
 #include "gif.h"
 #include "wave.h"
 
-static char audioOut[0x8000];
-static char imageOut[0x3820];
+static char dataBuf[0x1D800];
 
 static int WritePacketFrames(GifFile *gif, FILE *outFile, int colorMode, int gifImage, int i) {
 	while (i < 8) {
 		if (gifImage < gif->fp->ImageCount) {
-			if (GetGifFrame(gif, imageOut, gifImage, colorMode)) {
-				fwrite(imageOut, 1, 0x3820, outFile);
+			if (GetGifFrame(gif, dataBuf, gifImage, colorMode)) {
+				fwrite(dataBuf, 1, 0x3820, outFile);
 			} else {
 				printf("Frame %i has too many colors. The GIF must have at maximum 16 colors.\n", gifImage);
 				return -1;
 			}
 			++gifImage;
 		} else {
-			fwrite(imageOut, 1, 0x3820, outFile);
+			fwrite(dataBuf, 1, 0x3820, outFile);
 		}
 		++i;
 	}
 
-	memset(imageOut, 0, 0x1700);
-	fwrite(imageOut, 1, 0x1700, outFile);
+	memset(dataBuf, 0, 0x1700);
+	fwrite(dataBuf, 1, 0x1700, outFile);
 	return gifImage;
 }
 
@@ -88,26 +87,23 @@ int main(int argc, char* argv[])
 
 	if (syncMode) {
 		/* Pad out by a packet if auto-sync is set, to allow the audio to start properly */
-		memset(audioOut, 0x80, 0x8000);
-		fwrite(audioOut, 1, 0x8000, outFile);
-		memset(imageOut, 0, 0x3820);
-		for (i = 0; i < 8; ++i) {
-			fwrite(imageOut, 1, 0x3820, outFile);
-		}
-		fwrite(imageOut, 1, 0x1700, outFile);
+		memset(dataBuf, 0x80, 0x8000);
+		fwrite(dataBuf, 1, 0x8000, outFile);
+		memset(dataBuf, 0, 0x1D800);
+		fwrite(dataBuf, 1, 0x1D800, outFile);
 	}
 
 	while (audioRead) {
-		memset(audioOut, 0x80, 0x8000);
-		audioRead = ReadWaveData(&wave, audioOut, 0x8000);
-		fwrite(audioOut, 1, 0x8000, outFile);
+		memset(dataBuf, 0x80, 0x8000);
+		audioRead = ReadWaveData(&wave, dataBuf, 0x8000);
+		fwrite(dataBuf, 1, 0x8000, outFile);
 
 		if (audioRead) {
 			i = 0;
-			memset(imageOut, 0, 0x3820);
+			memset(dataBuf, 0, 0x3820);
 			while (delay > 0 && i < 8) {
 				/* Delay video if auto-sync is set, to get the video in sync with the audio */
-				fwrite(imageOut, 1, 0x3820, outFile);
+				fwrite(dataBuf, 1, 0x3820, outFile);
 				++i;
 				--delay;
 			}
@@ -129,13 +125,13 @@ int main(int argc, char* argv[])
 						CloseWaveFile(&wave);
 						exit(1);
 					}
-					memset(audioOut, 0x80, 0x8000);
-					fwrite(audioOut, 1, 0x8000, outFile);
+					memset(dataBuf, 0x80, 0x8000);
+					fwrite(dataBuf, 1, 0x8000, outFile);
 				}
 			}
 
-			memset(imageOut, 0, 0x1000);
-			fwrite(imageOut, 1, 0x1000, outFile);
+			memset(dataBuf, 0, 0x1000);
+			fwrite(dataBuf, 1, 0x1000, outFile);
 		}
 	}
 

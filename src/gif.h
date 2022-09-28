@@ -5,6 +5,8 @@
 
 typedef struct {
 	GifFileType *fp;
+	int refresh;
+	int bgDispose;
 } GifFile;
 
 int OpenGifFile(GifFile *gif, const char *filename);
