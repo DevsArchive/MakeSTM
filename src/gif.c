@@ -160,11 +160,9 @@ static int ConvertImage(GifFile *gif, SavedImage *image, char *imageConv, int co
 			for (y = 0; y < image->ImageDesc.Height; ++y) {
 				for (x = 0; x < image->ImageDesc.Width; ++x) {
 					if ((x + image->ImageDesc.Left) < CANVAS_WIDTH && (y + image->ImageDesc.Top) < CANVAS_HEIGHT) {
-						for (j = 0; j < 256; ++j) {
-							px1 = image->RasterBits[x + (y * image->ImageDesc.Width)];
-							if (px1 != trns) {
-								canvasImage[x + image->ImageDesc.Left + ((y + image->ImageDesc.Top) * CANVAS_WIDTH)] = px1;
-							}
+						px1 = image->RasterBits[x + (y * image->ImageDesc.Width)];
+						if (px1 != trns) {
+							canvasImage[x + image->ImageDesc.Left + ((y + image->ImageDesc.Top) * CANVAS_WIDTH)] = px1;
 						}
 					}
 				}
